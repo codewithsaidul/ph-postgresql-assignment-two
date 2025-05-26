@@ -1,7 +1,7 @@
 -- Active: 1747486928827@@127.0.0.1@5432@conservation_db
 
 
--- 1. create table for rangers
+-- create table for rangers
 CREATE TABLE rangers (
     ranger_id SERIAL PRIMARY KEY,
     name VARCHAR(100),
@@ -10,7 +10,7 @@ CREATE TABLE rangers (
 
 
 
--- 2. create table for species
+-- create table for species
 CREATE TABLE species (
     species_id SERIAL PRIMARY KEY,
     common_name VARCHAR(100),
@@ -20,7 +20,7 @@ CREATE TABLE species (
 );
 
 
--- 3. create table for sightings
+-- create table for sightings
 CREATE TABLE sightings (
     sightings_id SERIAL PRIMARY KEY,
     ranger_id INTEGER NOT NULL,
@@ -35,7 +35,7 @@ CREATE TABLE sightings (
 
 
 
--- 4. insert data into rangers table
+-- insert data into rangers table
 INSERT INTO rangers (name, region) VALUES ('Alice Green', 'Northern Hills'), ('Bob White', 'River Delta'),('Carol King', 'Mountain Range');
 
 
@@ -57,29 +57,29 @@ INSERT INTO sightings(species_id, ranger_id, location, sighting_time, notes) VAL
 
 
 
--- 1️⃣ Register a new ranger with provided data with name = 'Derek Fox' and region = 'Coastal Plains'
+-- Register a new ranger with provided data with name = 'Derek Fox' and region = 'Coastal Plains'
 INSERT INTO rangers(name, region) VALUES ('Derek Fox', 'Coastal Plains')
 
 
 
 
--- 2️⃣ Count unique species ever sighted.
+-- Count unique species ever sighted.
 SELECT COUNT(DISTINCT species_id) AS unique_species_count FROM sightings;
 
 
--- 3️⃣ Find all sightings where the location includes "Pass".
+-- Find all sightings where the location includes "Pass".
 SELECT * FROM sightings
     WHERE location ILIKE('%Pass%');
 
 
--- 4️⃣ List each ranger's name and their total number of sightings.
+-- List each ranger's name and their total number of sightings.
 SELECT r.name, COUNT(sightings_id) AS total_sightings from rangers AS r
     JOIN sightings AS s ON r.ranger_id = s.ranger_id
     GROUP BY r.name ORDER BY r.name ASC;
 
 
 
--- 5️⃣ List species that have never been sighted.
+-- List species that have never been sighted.
 SELECT common_name from species
     WHERE species_id NOT IN ( SELECT DISTINCT species_id from sightings);
 
@@ -87,7 +87,7 @@ SELECT common_name from species
 
 
 
--- 6️⃣ Show the most recent 2 sightings.
+-- Show the most recent 2 sightings.
 SELECT sp.common_name, sg.sighting_time, rg.name FROM sightings AS sg
     INNER JOIN rangers AS rg ON sg.ranger_id = rg.ranger_id
     INNER JOIN species AS sp ON sg.species_id = sp.species_id
@@ -98,7 +98,7 @@ SELECT sp.common_name, sg.sighting_time, rg.name FROM sightings AS sg
 
 
 
-7️⃣ Update all species discovered before year 1800 to have status 'Historic'.
+--  Update all species discovered before year 1800 to have status 'Historic'.
 UPDATE species
     set conservation_status = 'Historic'
     WHERE discovery_date < '1800-01-01'
@@ -106,7 +106,7 @@ UPDATE species
 
 
 
-
+-- Label each sighting's time of day as 'Morning', 'Afternoon', or 'Evening'.
 CREATE OR REPLACE FUNCTION get_time_0f_day(ts TIMESTAMP) 
 RETURNS TEXT
 LANGUAGE PLpgsql
@@ -125,15 +125,10 @@ $$
     END;
 $$;
 
-
-
-
--- 8️⃣ Label each sighting's time of day as 'Morning', 'Afternoon', or 'Evening'.
 SELECT sightings_id, get_time_0f_day(sighting_time) FROM sightings;
 
 
 
--- 9️⃣ Delete rangers who have never sighted any species
-
+-- Delete rangers who have never sighted any species
 DELETE FROM rangers
     WHERE ranger_id NOT IN ( SELECT ranger_id from sightings);
